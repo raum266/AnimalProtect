@@ -1,8 +1,9 @@
-#Default Animal Protect Config Version 1.4.1
+#Default Animal Protect Config Version 1.5.0
 notify: true
 notify-interval: 10
-notify-outdated: false
-update-check: false
+notify-outdated: true
+update-check: true
+shear-protect: true
 debug: false
 protect-from-player:
      - CHICKEN
@@ -14,5 +15,9 @@ protect-from-player:
      - WOLF
      - IRON_GOLOM
      - SNOWMAN
+     - HORSE
 protect-from-monsters:
      - VILLAGER
+FailMessage: You cannot attack mobs here!
+CommandFail: You lack the necessary permissions to perform this action.
+AdminNotification: Attempted to kill protected animals

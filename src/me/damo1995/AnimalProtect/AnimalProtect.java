@@ -1,19 +1,10 @@
 package me.damo1995.AnimalProtect;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.FileConfigurationOptions;
 import org.bukkit.plugin.Plugin;
@@ -31,16 +22,34 @@ public class AnimalProtect extends JavaPlugin{
 	
 	String fail = ChatColor.RED + "[AnimalProtect]: ";
 	
-	String mlversion = "";
 	public boolean outdated = false;
+	
+	/*********************************************************\
+	 * Language Localisation Stuff							 *
+	 *														 *
+	 * 														 *
+	 *********************************************************/
+
+	
+	
+	public String failMsg;
+	public String cmdFail;
+	public String adminNotifyMsg;
+	protected Boolean isLatest;
+	protected String latestVersion;
+	
+/**************************************************************/
+  
 
 //	public final DamageListeners dl = new DamageListeners(this);
 	public final NewDamageListeners dl = new NewDamageListeners(this);
-	public final ShearListener shear = new ShearListener(this);
+	public final InteractListener shear = new InteractListener(this);
 	public final VersionCheck vc = new VersionCheck(this);
-	
+	public final UpdateChecker updateCheck = new UpdateChecker(this);
 	//Enable stuff
-	public void onEnable(){		
+	public void onEnable(){	
+		
+		// INIT STUFF //
 		//event registration
 		PluginManager pm = this.getServer().getPluginManager();
 		pm.registerEvents(dl, this);
@@ -55,7 +64,8 @@ public class AnimalProtect extends JavaPlugin{
 		setupConfig();
 		//Check for Updates
 		if(getConfig().getBoolean("update-check") == true){
-		updateCheck();
+			isLatest = updateCheck.isLatest();
+			latestVersion = updateCheck.getUpdateVersion();
 		}
 		else{
 			return;
@@ -63,6 +73,12 @@ public class AnimalProtect extends JavaPlugin{
 		//Check Config for any errors.
 		validateConfig();
 		collectStats();
+		//Check for commands and such.
+		this.getCommand("animalprotect").setExecutor(new CommandHandler(this));	
+		
+		this.failMsg = fail + getConfig().getString("FailMessage");
+		this.cmdFail = fail + getConfig().getString("CommandFail");
+		this.adminNotifyMsg = fail + getConfig().getString("AdminNotification");
 	}
 	
 	public void collectStats(){
@@ -122,7 +138,7 @@ public class AnimalProtect extends JavaPlugin{
 		saveConfig();
 	}
 	
-	private void validateConfig(){
+	public void validateConfig(){
 		if(this.getConfig().getInt("notify-interval") > 20){
 			this.logWarning("Notify interval greater then 20");
 			this.logMessage("Notify Interval set to 20");
@@ -130,100 +146,5 @@ public class AnimalProtect extends JavaPlugin{
 			this.saveConfig();
 		}
 	}
-	//Check for commands and such.
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
-    	if(commandLabel.equalsIgnoreCase("animalprotect")){
-    		if(args.length < 1){
-				sender.sendMessage(ChatColor.YELLOW + "+++++++++AnimalProtect++++++++++");
-				sender.sendMessage(ChatColor.GREEN + "+ A Animal Friendly Plugin!");
-				sender.sendMessage(ChatColor.RED + "+ Version: " + getDescription().getVersion());
-				sender.sendMessage(ChatColor.LIGHT_PURPLE + "+ Developer: " + getDescription().getAuthors());
-				sender.sendMessage(ChatColor.AQUA + "http://www.dev.bukkit.org/server-mods/animalprotect");
-				sender.sendMessage(ChatColor.YELLOW + "+++++++++++++++++++++++++++++");
-				return true;
-    		}
-    		if(args[0].equalsIgnoreCase("-reload") && sender.isOp() || sender.hasPermission("animalprotect.admin")){
-    			//reload config stuff.
-    			this.reloadConfig();
-    			//Set string on reload of config.
-    			this.validateConfig();
-    			sender.sendMessage(success + "Configuration Reloaded!");
-    			return true;
-    		}
-    		if(args[0].equalsIgnoreCase("-list") && args[1].equalsIgnoreCase("player") && sender.isOp() || sender.hasPermission("animalprotect.list")){
-    			List<String> pfp = getConfig().getStringList("protect-from-player");
-    			sender.sendMessage(success + "The following are protected from players");
-    			for(String i : pfp){
-    				sender.sendMessage(i);
-    			}
-    		}
-    		if(args[0].equalsIgnoreCase("-list") && args[1].equalsIgnoreCase("mobs") && sender.isOp() || sender.hasPermission("animalprotect.list")){
-    			List<String> pfp = getConfig().getStringList("protect-from-monsters");
-    			sender.sendMessage(success + "The following are protected from mobs");
-    			for(String i : pfp){
-    				sender.sendMessage(i);
-    				}
-    		}
-    		else{ sender.sendMessage(fail + "You lack the necessary permissions to perform this action.");
-    		return true;
-    		}
-    	}
-    	return false; 
-    }
-	//Update checking 
-	public List<String> readURL(String url)
-	{
-	        try {
-	                URL site = new URL(url);
-	                URLConnection urlC = site.openConnection();
-	                BufferedReader in = new BufferedReader(new InputStreamReader(urlC.getInputStream()));
-
-	                List<String> lines = new ArrayList<String>();
-	                String line;
-	                while((line = in.readLine()) != null)
-	                {
-	                        lines.add(line);
-	                }
-
-	                in.close();
-
-	                return lines;
-	        } catch(MalformedURLException e) {
-	                e.printStackTrace();
-		    this.logMessage("Could not connect to Update Server.");
-	        } catch(IOException e) {
-	                e.printStackTrace();
-	        }
-	          catch(NumberFormatException e){
-	        	  e.printStackTrace();
-	        	  this.logMessage("Please Report this error to animalprotect@ddelay.co.uk");
-	          }
-
-	        return null;
-	}
-	//run the check for an update
-	public void updateCheck(){
-		PluginDescriptionFile pdfFile = getDescription();
-
-		VersionNumber currentVersion = new VersionNumber(pdfFile.getVersion());
-		List<String> versionURL = readURL("http://ddelay.co.uk/bukkit/AnimalProtect/ver.html");
-		String lVersion = versionURL.get(0) + "." + versionURL.get(1) + "." + versionURL.get(2);
-		VersionNumber latestVersion = new VersionNumber(lVersion);
-
-		if(currentVersion.version[0] < latestVersion.version[0] ||
-		                currentVersion.version[1] < latestVersion.version[1] ||
-		                currentVersion.version[2]< latestVersion.version[2])
-		{
-		        //UPDATE AVAILABLE
-			this.logMessage("Update Avaliable" + " " + "Latest Version: " + lVersion);
-			this.mlversion = lVersion;
-			outdated = true;
-		} else {
-		        //UP TO DATE
-			outdated = false;
-		} 
-	}
-
-
 
 }

@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
- 
+
 import com.sk89q.worldguard.protection.managers.RegionManager;
  
 @SuppressWarnings("unused")
@@ -51,7 +51,7 @@ public void onAttacked(EntityDamageByEntityEvent event){
 			player.sendMessage(event.getDamager().getType().toString() + " Attacked " + event.getEntity().getType().toString()); 
 			player.sendMessage("Attack Failed");
 			}
-			player.sendMessage(fail);
+			player.sendMessage(plugin.failMsg);
 			if(plugin.getConfig().getBoolean("notify") == true){
 			notifyAdmin(player);
 			}
@@ -63,8 +63,8 @@ public void onAttacked(EntityDamageByEntityEvent event){
 }
 @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
 public void onAttackArrow(EntityDamageByEntityEvent event){
-	if(event.getDamager() instanceof Arrow){
-		Projectile arrow = (Arrow)event.getDamager();
+	if(event.getDamager() instanceof Projectile){
+		Projectile arrow = (Projectile)event.getDamager();
 		String entity = event.getEntity().getType().toString();
 		Boolean debug = plugin.getConfig().getBoolean("debug");
 		List<String> pfa = plugin.getConfig().getStringList("protect-from-player");
@@ -84,7 +84,7 @@ public void onAttackArrow(EntityDamageByEntityEvent event){
 					player.sendMessage(event.getDamager().getType().toString() + " Attacked " + event.getEntity().getType().toString()); 
 					player.sendMessage("Attack Failed");
 				}
-				player.sendMessage(fail);
+				player.sendMessage(plugin.failMsg);
 				if(plugin.getConfig().getBoolean("notify") == true){
 				notifyAdmin(player);
 				}
@@ -110,10 +110,10 @@ public void notifyAdmin(Player player){
 		if (NewDamageListeners.plugin.getConfig().getBoolean("notify") == true) {
 		for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers()) {
 			// Get a list of online players and check if they have permission/op //
-			if (onlinePlayer.hasPermission("animalprotect-notify")
+			if (onlinePlayer.hasPermission("animalprotect.notify")
 					|| onlinePlayer.isOp()) {
-				onlinePlayer.sendMessage(plugin.fail + player.getName() + " " + "Attempted to kill protected animals");
-				NewDamageListeners.plugin.logMessage(player.getName() + " " + "Attempted to kill protected animals");
+				onlinePlayer.sendMessage(player.getName() + " " + plugin.failMsg);
+				NewDamageListeners.plugin.logMessage(player.getName() + " " + plugin.failMsg);
 			}
 		}
 	}

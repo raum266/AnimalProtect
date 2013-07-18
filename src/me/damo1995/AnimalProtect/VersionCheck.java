@@ -16,9 +16,9 @@ public class VersionCheck implements Listener{
 	public void onPlayerJoinEvent(PlayerJoinEvent event){
 		Player player = event.getPlayer();
 		if(plugin.getConfig().getBoolean("notify-outdated") == true){
-		if(plugin.outdated == true){
+		if(plugin.isLatest == false || plugin.isLatest == null){
 			if(player.isOp() || player.hasPermission("animalprotect.admin")){
-				player.sendMessage(plugin.fail + "Is out of date, Latest Version: " + plugin.mlversion);
+				player.sendMessage(plugin.fail + "Is out of date, Latest Version: " + plugin.latestVersion);
 			}
 		
 		}
