@@ -11,7 +11,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.mcstats.MetricsLite;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 
@@ -72,7 +71,7 @@ public class AnimalProtect extends JavaPlugin{
 		}
 		//Check Config for any errors.
 		validateConfig();
-		collectStats();
+		
 		//Check for commands and such.
 		this.getCommand("animalprotect").setExecutor(new CommandHandler(this));	
 		
@@ -81,17 +80,7 @@ public class AnimalProtect extends JavaPlugin{
 		this.adminNotifyMsg = fail + getConfig().getString("AdminNotification");
 	}
 	
-	public void collectStats(){
-		try {
-			MetricsLite metrics = new MetricsLite(this);
-			metrics.start();
-			this.logMessage("Collecting Stats");
-			this.logMessage("If You do not wish for AnimalProtect to collect stats please set opt-out to true");
-			} catch (IOException e) {
-			this.logMessage("Coulden't submit stats!");
-		}
-		
-	}
+	
 	
 	public void onDisable(){
 		//Log MSG disabled.
